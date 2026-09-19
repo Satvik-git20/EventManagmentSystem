@@ -1,0 +1,93 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          cd EventRegistrationSystem
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run migrations
+        run: |
+          cd EventRegistrationSystem
+          python manage.py migrate --settings=config.settings
+        env:
+          DJANGO_SECRET_KEY: test-secret-key
+          DEBUG: True
+          ALLOWED_HOSTS: localhost,127.0.0.1
+          DB_NAME: test_db
+          DB_USER: postgres
+          DB_PASSWORD: postgres
+          DB_HOST: localhost
+          DB_PORT: 5432
+
+      - name: Run tests
+        run: |
+          cd EventRegistrationSystem
+          python manage.py test --settings=config.settings
+        env:
+          DJANGO_SECRET_KEY: test-secret-key
+          DEBUG: True
+          ALLOWED_HOSTS: localhost,127.0.0.1
+          DB_NAME: test_db
+          DB_USER: postgres
+          DB_PASSWORD: postgres
+          DB_HOST: localhost
+          DB_PORT: 5432
+
+      - name: Check code formatting
+        run: |
+          cd EventRegistrationSystem
+          python -m py_compile $(find . -name "*.py" -not -path "./venv/*" -not -path "./__pycache__/*")
+
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install ruff
+        run: pip install ruff
+
+      - name: Run ruff
+        run: |
+          cd EventRegistrationSystem
+          ruff check .
