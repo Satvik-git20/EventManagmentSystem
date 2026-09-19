@@ -1,7 +1,8 @@
-from django.test import TestCase
 from django.contrib.auth.models import User
-from rest_framework.test import APIClient
+from django.test import TestCase
 from rest_framework import status
+from rest_framework.test import APIClient
+
 from .models import UserProfile
 
 
@@ -70,7 +71,7 @@ class AccountsAPITest(TestCase):
         self.assertEqual(user.userprofile.organization_name, 'Test Org')
 
     def test_login_user(self):
-        user = User.objects.create_user(**self.user_credentials)
+        _ = User.objects.create_user(**self.user_credentials)
         response = self.client.post('/api/accounts/auth/login/', {
             'username': 'testuser',
             'password': 'testpass123'

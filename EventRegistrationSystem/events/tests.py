@@ -1,11 +1,15 @@
-from django.test import TestCase
-from django.contrib.auth.models import User
-from django.utils import timezone
 from datetime import timedelta
-from rest_framework.test import APIClient
-from rest_framework import status
-from .models import Event, Registration
+
 from accounts.models import UserProfile
+from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
+from django.db import IntegrityError
+from django.test import TestCase
+from django.utils import timezone
+from rest_framework import status
+from rest_framework.test import APIClient
+
+from .models import Event, Registration
 
 
 class EventModelTest(TestCase):
@@ -44,7 +48,7 @@ class EventModelTest(TestCase):
             capacity=10,
             organizer=self.organizer
         )
-        with self.assertRaises(Exception):
+        with self.assertRaises(ValidationError):
             event.full_clean()
 
     def test_event_zero_capacity_validation(self):
@@ -56,7 +60,7 @@ class EventModelTest(TestCase):
             capacity=0,
             organizer=self.organizer
         )
-        with self.assertRaises(Exception):
+        with self.assertRaises(ValidationError):
             event.full_clean()
 
     def test_event_negative_capacity_validation(self):
@@ -68,7 +72,7 @@ class EventModelTest(TestCase):
             capacity=-5,
             organizer=self.organizer
         )
-        with self.assertRaises(Exception):
+        with self.assertRaises(ValidationError):
             event.full_clean()
 
     def test_event_available_spots(self):
@@ -134,7 +138,7 @@ class RegistrationModelTest(TestCase):
 
     def test_unique_registration_constraint(self):
         Registration.objects.create(user=self.user, event=self.event)
-        with self.assertRaises(Exception):
+        with self.assertRaises(IntegrityError):
             Registration.objects.create(user=self.user, event=self.event)
 
 

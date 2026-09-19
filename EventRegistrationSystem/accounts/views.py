@@ -1,12 +1,13 @@
-from rest_framework import viewsets, status, generics
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated, AllowAny
-from rest_framework.authtoken.models import Token
-from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
+from django.contrib.auth.models import User
+from rest_framework import generics, status, viewsets
+from rest_framework.authtoken.models import Token
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
+
 from .models import UserProfile
-from .serializers import UserSerializer, UserProfileSerializer, RegisterSerializer
+from .serializers import RegisterSerializer, UserProfileSerializer, UserSerializer
 
 
 class RegisterView(generics.CreateAPIView):
@@ -18,7 +19,7 @@ class RegisterView(generics.CreateAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
-        token, created = Token.objects.get_or_create(user=user)
+        token, _ = Token.objects.get_or_create(user=user)
         return Response({
             'user': UserSerializer(user).data,
             'token': token.key
@@ -33,7 +34,7 @@ class LoginView(generics.GenericAPIView):
         password = request.data.get('password')
         user = authenticate(username=username, password=password)
         if user:
-            token, created = Token.objects.get_or_create(user=user)
+            token, _ = Token.objects.get_or_create(user=user)
             return Response({
                 'user': UserSerializer(user).data,
                 'token': token.key
@@ -55,7 +56,7 @@ class LogoutView(generics.GenericAPIView):
 @api_view(['GET', 'PUT', 'PATCH'])
 @permission_classes([IsAuthenticated])
 def user_profile(request):
-    profile, created = UserProfile.objects.get_or_create(user=request.user)
+    profile, _ = UserProfile.objects.get_or_create(user=request.user)
     if request.method == 'GET':
         serializer = UserProfileSerializer(profile)
         return Response(serializer.data)

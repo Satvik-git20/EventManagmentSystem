@@ -1,4 +1,5 @@
 from rest_framework import serializers
+
 from .models import Event, Registration
 
 
@@ -9,7 +10,10 @@ class EventSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Event
-        fields = ['id', 'title', 'description', 'date', 'location', 'capacity', 'organizer', 'created_at', 'available_spots', 'is_full']
+        fields = [
+            'id', 'title', 'description', 'date', 'location', 'capacity',
+            'organizer', 'created_at', 'available_spots', 'is_full'
+        ]
         read_only_fields = ['organizer', 'created_at', 'available_spots', 'is_full']
 
     def validate_date(self, value):

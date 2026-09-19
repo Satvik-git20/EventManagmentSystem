@@ -1,12 +1,13 @@
-from rest_framework import viewsets, status, generics, filters
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from django_filters.rest_framework import DjangoFilterBackend
 from django.db import models
 from django.db.models import Count
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters, generics, status, viewsets
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+
 from .models import Event, Registration
+from .permissions import IsEventOrganizer, IsOrganizerOrReadOnly
 from .serializers import EventSerializer, RegistrationSerializer
-from .permissions import IsOrganizerOrReadOnly, IsEventOrganizer
 
 
 class EventViewSet(viewsets.ModelViewSet):
